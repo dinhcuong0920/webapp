@@ -1,31 +1,40 @@
 <template>
-    <div class="row">
-        <div class="col-sm-6">
-            <button type="button" class="btn btn-outline-primary">
-                <router-link to='/'>Home</router-link>
-            </button>
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Live Camera</h5>
-                    <div id="full_creen" class="camera">
-                        <video id="video" autoplay></video>
-                    </div>
-                </div>
-                <div class="button_group">
-                    <button class="swith" v-on:click="swithCamera()">Swith</button>
-                    <button class="snap" v-on:click="snapShot()">SNAP</button>
-                    <button class="full" v-on:click="fullScreen()">Full</button>
-                </div>
-            </div>
-            <div class="card" style="margin-top:20px">
-                <div class="card-body">
-                    <h5 class="card-title">Your Image</h5>
-                    <canvas class="preview"></canvas>
-                </div>
-                <button type="button" @click="uploadImage" class="btn btn-outline-primary">
-                    Submit
+    <div>
+        <div class="row">
+            <div class="col-sm-6">
+                <button type="button" class="btn btn-outline-primary">
+                    <router-link to='/'>Home</router-link>
                 </button>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Live Camera</h5>
+                        <div id="card-full" class="camera">
+                            <video id="video" autoplay></video>
+                            <div class="button_group">
+                                <button class="swith" v-on:click="swithCamera()">Swith</button>
+                                <button class="snap" v-on:click="snapShot()">SNAP</button>
+                                <button class="full" v-on:click="fullScreen()">Full</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
             </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="card" style="margin-top:20px">
+                    <div class="card-body">
+                        <h5 class="card-title">Your Image</h5>
+                        <canvas class="preview"></canvas>
+                    </div>
+                    <button type="button" @click="uploadImage" class="btn btn-outline-primary">
+                        Submit
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 </template>
@@ -42,15 +51,17 @@
             return {
                 companies: [],
                 currentFacingMode: 'user',
-                file: null
+                srcImage: null,
+                onStream: null
             }
         },
-        beforeMount() {
+        mounted() {
             this.cameraStream()
         },
         methods: {
             cameraStream: async function () {
                 let constraints = {
+                    audio: false,
                     video: {
                         facingMode: this.currentFacingMode,
                     },
@@ -59,10 +70,9 @@
                     navigator.mediaDevices
                         .getUserMedia(constraints)
                         .then(stream => {
-                            console.log(constraints.video.facingMode)
+                            this.onStream = stream
                             const videoPlay = document.querySelector("video");
                             videoPlay.srcObject = stream;
-                            videoPlay.play();
                         })
                 } else {
                     alert("Cannot Get Media Device")
@@ -72,7 +82,8 @@
             async uploadImage() {
                 let url = "http://";
                 let formData = new FormData;
-                formData.append('files', this.file)
+                let imageData = this.dataURItoBlob(this.srcImage)
+                formData.append('files', imageData)
                 try {
                     await axios.post(url, formData, {
                             headers: {
@@ -93,33 +104,62 @@
                 }
 
             },
+            async snapShot() {
+                let video = document.getElementById("video");
+                let canvas = document.querySelector("canvas");
+                let context = canvas.getContext('2d');
+                let snd = new Audio(require("../snd/click.mp3"));
+                await snd.play();
+                context.drawImage(video, 0, 0, 250, 150);
+                this.srcImage = canvas.toDataURL("image/png")
+            },
 
-        snapShot() {
-            let video = document.getElementById("video");
-            let canvas = document.querySelector("canvas");
-            let context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        },
+            async swithCamera() {
+                if (this.currentFacingMode == 'environment') {
+                    this.currentFacingMode = 'user'
+                } else {
+                    this.currentFacingMode = 'environment'
+                }
+                await this.stopStreaming();
+                this.cameraStream()
+            },
 
-        swithCamera() {
-            if (this.currentFacingMode == 'environment') {
-                this.currentFacingMode = 'user'
-            } else {
-                this.currentFacingMode = 'environment'
+            fullScreen() {
+                let element = document.getElementById('card-full')
+                if (screenfull.isEnabled) {
+                    screenfull.toggle(element);
+                }
+            },
+
+            //convet URI Images to Blob
+            dataURItoBlob(dataURI) {
+
+                let byteString = atob(dataURI.split(',')[1]);
+                let mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+                let buffer = new ArrayBuffer(byteString.length);
+                let data = new DataView(buffer);
+
+                for (let i = 0; i < byteString.length; i++) {
+
+                    data.setUint8(i, byteString.charCodeAt(i));
+                }
+
+                return new Blob([buffer], {
+                    type: mimeString
+                });
+            },
+
+            stopStreaming() {
+                if (null != this.onStream) {
+                    let track = this.onStream.getTracks()[0];
+                    track.stop();
+                }
             }
-            this.cameraStream()
         },
-
-        fullScreen() {
-            let element = document.getElementById('video')
-            if (screenfull.isEnabled) {
-                screenfull.toggle(element);
-            }
-        },
-
-
-    },
-    beforeDestroy() {}
+        beforeDestroy() {
+            this.stopStreaming()
+        }
 
 
 
@@ -128,8 +168,6 @@
 
 <style>
     .camera {
-        width: 100%;
-        height: 50%;
         box-sizing: border-box;
     }
 
@@ -137,7 +175,9 @@
         position: relative;
         display: block;
         width: 100%;
+        height: 100%;
         background-color: #171717;
+        z-index: 0;
     }
 
     .button_group {
@@ -147,12 +187,9 @@
         right: 0;
         display: flex;
         height: 50px;
-        background-color: grey;
         opacity: 0.5;
-        z-index: 100;
-        margin-bottom: 20px;
-        margin-right: 20px;
-        margin-left: 20px;
+        z-index: 1000;
+        margin: 0px 20px 20px 20px;
     }
 
     .snap {
@@ -163,7 +200,6 @@
         border: 1px solid #171717;
         outline: none;
         cursor: pointer;
-        text-align: center;
     }
 
 
@@ -218,8 +254,9 @@
 
     .picture canvas {
         display: block;
-        width: 100%;
-        margin: 0 auto;
         box-shadow: 4px 4px 12px 0px;
+        margin: 10px 10px 10px 10px;
     }
+
+    
 </style>
