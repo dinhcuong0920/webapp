@@ -1,28 +1,28 @@
 <template>
     <div class="row">
-
         <div class="col-sm-6">
             <button type="button" class="btn btn-outline-primary">
                 <router-link to='/'>Home</router-link>
             </button>
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Special title treatment</h5>
-                    <div class="camera">
+                    <h5 class="card-title">Live Camera</h5>
+                    <div id="full_creen" class="camera">
                         <video id="video" autoplay></video>
-                        <div class="button_group">
-                            <button class="swith" v-on:click="swithCamera()">Swith Camera</button>
-                            <button class="snap" v-on:click="snapShot()">SNAP</button>
-                            <button class="full" v-on:click="fullScreen()">Full</button>
-                        </div>
                     </div>
                 </div>
+                <div class="button_group">
+                    <button class="swith" v-on:click="swithCamera()">Swith</button>
+                    <button class="snap" v-on:click="snapShot()">SNAP</button>
+                    <button class="full" v-on:click="fullScreen()">Full</button>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="picture">
-                <canvas class="preview"></canvas>
-                <button type="button" class="btn btn-outline-primary">
+            <div class="card" style="margin-top:20px">
+                <div class="card-body">
+                    <h5 class="card-title">Your Image</h5>
+                    <canvas class="preview"></canvas>
+                </div>
+                <button type="button" @click="uploadImage" class="btn btn-outline-primary">
                     Submit
                 </button>
             </div>
@@ -32,6 +32,7 @@
 
 <script>
     import screenfull from 'screenfull';
+    import axios from "axios"
     export default {
         name: 'TakePicture',
         components: {
@@ -40,7 +41,8 @@
         data: function () {
             return {
                 companies: [],
-                currentFacingMode: 'user'
+                currentFacingMode: 'user',
+                file: null
             }
         },
         beforeMount() {
@@ -67,31 +69,57 @@
                 }
             },
 
-            snapShot() {
-                let video = document.getElementById("video");
-                let canvas = document.querySelector("canvas");
-                let context = canvas.getContext('2d');
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            async uploadImage() {
+                let url = "http://";
+                let formData = new FormData;
+                formData.append('files', this.file)
+                try {
+                    await axios.post(url, formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        })
+                        .then(function (response) {
+                            console.log(response)
+
+                        }).catch(function (err) {
+                            console.log(err)
+                        })
+                } catch (err) {
+                    alert(err)
+                } finally {
+                    this.file = null;
+                    alert("Success to sent request")
+                }
+
             },
 
-            swithCamera() {
-                if (this.currentFacingMode == 'environment') {
-                    this.currentFacingMode = 'user'
-                } else {
-                    this.currentFacingMode = 'environment'
-                }
-                this.cameraStream()
-            },
-
-            fullScreen() {
-                let element = document.getElementById('video')
-                if (screenfull.isEnabled) {
-                    screenfull.toggle(element);
-                }
-            }
-
+        snapShot() {
+            let video = document.getElementById("video");
+            let canvas = document.querySelector("canvas");
+            let context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
         },
-        beforeDestroy() {}
+
+        swithCamera() {
+            if (this.currentFacingMode == 'environment') {
+                this.currentFacingMode = 'user'
+            } else {
+                this.currentFacingMode = 'environment'
+            }
+            this.cameraStream()
+        },
+
+        fullScreen() {
+            let element = document.getElementById('video')
+            if (screenfull.isEnabled) {
+                screenfull.toggle(element);
+            }
+        },
+
+
+    },
+    beforeDestroy() {}
 
 
 
@@ -115,17 +143,21 @@
     .button_group {
         position: absolute;
         bottom: 0px;
+        left: 0;
+        right: 0;
         display: flex;
-        width: 100%;
         height: 50px;
         background-color: grey;
         opacity: 0.5;
+        z-index: 100;
+        margin-bottom: 20px;
+        margin-right: 20px;
+        margin-left: 20px;
     }
 
     .snap {
         display: inline-block;
         margin: auto;
-        width: 33.33%;
         height: 50px;
         background-color: red;
         border: 1px solid #171717;
@@ -139,7 +171,6 @@
         position: absolute;
         display: inline-block;
         margin: 0 auto;
-        width: 33.33%;
         height: 50px;
         background-color: red;
         border: 1px solid #171717;
@@ -152,7 +183,6 @@
         position: absolute;
         display: inline-block;
         margin: 0 auto;
-        width: 33.34%;
         height: 50px;
         background-color: red;
         border: 1px solid #171717;
