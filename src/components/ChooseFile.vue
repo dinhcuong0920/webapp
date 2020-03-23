@@ -1,25 +1,29 @@
 <template>
     <div class="row">
         <div class="col-sm-6">
-        <form>
-            <div class="form-group">
-                <label for="exampleInputEmail1">Your Face</label>
-                <input type="file" class="form-control" @change="chooseFace" id="">
-                <div>
-                    <img class="img-thumbnail" width="200px" height="200px" v-if="faceImage" :src="faceImage" />
+            <form>
+                <button type="button" class="btn btn-outline-primary">
+                    <router-link to='/'>Home</router-link>
+                </button>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Your Face</label>
+                    <input type="file" class="form-control" @change="chooseFace" id="">
+                    <div>
+                        <img class="img-thumbnail" width="200px" height="200px" v-if="faceImage" :src="faceImage" />
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="exampleInputPassword1">Passport</label>
-                <input type="file" class="form-control" @change="choosePassPort" id="">
-                <div>
-                    <img class="img-thumbnail" width="200px" height="200px" v-if="passPortImage" :src="passPortImage" />
+                <div class="form-group">
+                    <label for="exampleInputPassword1">Passport</label>
+                    <input type="file" class="form-control" @change="choosePassPort" id="">
+                    <div>
+                        <img class="img-thumbnail" width="200px" height="200px" v-if="passPortImage"
+                            :src="passPortImage" />
+                    </div>
                 </div>
-            </div>
-            <div class="form-group form-check">
-            </div>
-            <button @click="uploadImage" class="btn btn-primary">Submit</button>
-        </form>
+                <div class="form-group form-check">
+                </div>
+                <button @click="uploadImage" class="btn btn-primary">Submit</button>
+            </form>
         </div>
     </div>
 </template>
@@ -59,27 +63,30 @@
                 let url = "http://";
                 let formData = new FormData;
                 formData.append('files', this.files)
-                try{
+                try {
                     await axios.post(url, formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    })
-                    .then(function (response) {
-                        console.log(response)
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        })
+                        .then(function (response) {
+                            console.log(response)
 
-                    }).catch(function (err) {
-                        console.log(err)
-                    })
-                }catch(err){
-                    alert(err)
-                }
-                finally{
+                        }).catch(function (err) {
+                            console.log(err)
+                        })
+                } catch (err) {
+                    console.log(err)
+                } finally {
                     this.faceImage = null;
-                    this.passPortImage= null;
+                    this.passPortImage = null;
+                    this.files.face = null;
+                    this.files.pasport = null;
+                    let form = document.querySelector('form')
+                    form.reset()
                     alert("Success to sent request")
                 }
-                
+
             }
         }
     }

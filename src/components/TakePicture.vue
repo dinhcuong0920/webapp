@@ -16,9 +16,7 @@
                                 <button class="full" v-on:click="fullScreen()">Full</button>
                             </div>
                         </div>
-
                     </div>
-
                 </div>
             </div>
         </div>
@@ -66,16 +64,16 @@
                         facingMode: this.currentFacingMode,
                     },
                 };
-                if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+                if (navigator.mediaDevices) {
                     navigator.mediaDevices
                         .getUserMedia(constraints)
                         .then(stream => {
                             this.onStream = stream
                             const videoPlay = document.querySelector("video");
                             videoPlay.srcObject = stream;
+                        }).catch(() => {
+                            alert('webcam is not available')
                         })
-                } else {
-                    alert("Cannot Get Media Device")
                 }
             },
 
@@ -100,7 +98,10 @@
                     alert(err)
                 } finally {
                     this.file = null;
-                    alert("Success to sent request")
+                    let canvas = document.querySelector('canvas');
+                    let context = canvas.getContext('2d');
+                    context.clearRect(0, 0, 250, 150);
+                    alert("Success to sent request");
                 }
 
             },
@@ -257,6 +258,4 @@
         box-shadow: 4px 4px 12px 0px;
         margin: 10px 10px 10px 10px;
     }
-
-    
 </style>
