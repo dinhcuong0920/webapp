@@ -6,7 +6,6 @@
           <h3 class="text-center">Way2Go</h3>
         </div>
       </div>
-      <router-view />
     </div>
   </div>
 </template>

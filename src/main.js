@@ -1,18 +1,14 @@
 import Vue from 'vue'
-import App from './App.vue'
+import Home from './components/Home.vue'
 import VueRouter from 'vue-router';
 import routes from './router';
-import  BootstrapVue  from 'bootstrap-vue'
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+require('./app.bundle.css')
 
 Vue.config.productionTip = false
-Vue.use(VueRouter);
-Vue.use(BootstrapVue);
 
 const router = new VueRouter({routes});
 
 new Vue({
   router,
-  render: h => h(App),
+  render: h => h(Home),
 }).$mount('#app')
