@@ -33,7 +33,19 @@
               </nav>
               <div class="tab-content p-5">
                 <div class="tab-pane fade" v-for="(item,index) in dataTimeSimplize" :key="index" :class="index == 0? 'active show' : ''" :id="`nav-${item.name}`" role="tabpanel" aria-labelledby="nav-home-tab">
-                  <div class="row" v-for="(it, idx) in convertDataFromSimplize(item.value, dataSimplize)" :key="idx">
+                  <div v-if="item.name == '1D'">
+                    <div class="row mb-2" v-for="(it, idx) in convertDataFromSimplize(item.value, dataFialda)" :key="idx">
+                    <div class="col-3">
+                      <label>{{ it.icbName }}</label>
+                    </div>
+                    <div class="col-6">
+                      <div class="progress">
+                        <div class="progress-bar" :class="it.changePercent1D * 100 > 0? 'bg-green' : 'bg-red'" role="progressbar" :style="`width: ${Math.abs(it.pricePctChg7d * 100)}%`" :aria-valuenow="Math.abs(it.pricePctChg7d * 100)" aria-valuemin="0" aria-valuemax="100">{{ it.pricePctChg7d * 100 }} %</div>
+                      </div>
+                    </div>
+                  </div>
+                  </div>
+                  <div class="row mb-2" v-for="(it, idx) in convertDataFromSimplize(item.value, dataSimplize)" :key="idx">
                     <div class="col-3">
                       <label>{{ it.bcEconomicSectorName }}</label>
                     </div>
@@ -69,7 +81,7 @@
       <div class="col-12">
         <div v-for="(item,index) in data" :id="`panel-${item.code}`" :key="index" class="panel mb-5">
           <div class="panel-hdr">
-            <h2>
+            <h2 class="text-center">
               {{ item.name }}
             </h2>
             <div class="panel-toolbar">
@@ -206,11 +218,16 @@
       return {
         urlApi: 'https://restv2.fireant.vn',
         urlApiSimplize: 'https://api.simplize.vn/api',
+        urlApiFialda: 'https://fwtapi2.fialda.com/api',
         curDay: moment().format('YYYY-MM-DD'),
         cusDay: null,
         rangeTime: [1, 3, 6, 9, 12, 24],
         timerSelected: 3,
         dataTimeSimplize: [
+          // {
+          //   name: '1D',
+          //   value: 'changePercent1D'
+          // },
           {
             name: '7D',
             value: 'pricePctChg7d'
@@ -237,6 +254,7 @@
           }
         ],
         dataSimplize: [],
+        dataFialda: [],
         data: [{
             name: 'tài chính',
             code: 8000,
@@ -363,7 +381,8 @@
     },
     async mounted() {
       await this.getDataWithTime()
-      await this.getDataFromSimplize()
+      this.getDataFromSimplize()
+      // this.getDataFromFialda()
     },
     methods: {
       async getDataWithTime(type=null) {
@@ -415,16 +434,24 @@
         const header = {
           Authorization: token
         }
-        const res = await axios.get(`${this.urlApiSimplize}/api/company/se/sector-performance`, {
+        const res = await axios.get(`${this.urlApiSimplize}/company/se/sector-performance`, {
           headers: header
         })
-        console.log(res)
-        this.dataSimplize = res.data.sectorPerformances
-        return res.data
+        this.dataSimplize = res.data.data.sectorPerformances
       },
-      async setToken(token) {
-        document.cookie = `token=${token}`
+      async getDataFromFialda() {
+        const header = {
+          origin: 'https://fwt.fialda.com',
+          referer: 'https://fwt.fialda.com/'
+        }
+        const res = await axios.get(`https://fwtapi2.fialda.com/api/services/app/Market/GetICBInfos`, { crossDomain: true })
+        this.dataFialda = res.data.result
+      },
+      async setToken(data) {
+        document.cookie = `token=${data.token}`
+        document.cookie = `token-simplize=${data.tokenSimplize}`
         await this.getDataWithTime()
+        this.getDataFromSimplize()
       },
       convertDataFromSimplize(type, data) {
         return _.orderBy(data, [type], ['desc'])
@@ -470,9 +497,15 @@
 h2 , a.card-title{
   text-transform: uppercase;
 }
+div.panel h2 {
+  justify-content: center;
+}
 div.panel-container div.indicator{
   position: absolute;
   right: 20px;
+}
+div.panel-container div.form-group{
+  padding: 0px 20px;
 }
 a.btn {
   color: #FFF !important;
@@ -486,7 +519,16 @@ ul.list-inline {
 ul.list-inline li a {
   margin: 0px 10px;
 }
-@media only screen and (max-width: 600px) {
+div.tab-content div.col-3, div.tab-content div.col-6 {
+  margin-bottom: auto;
+  margin-top: auto;
+}
+.progress{
+  height: 2rem;
+  font-size: 15px;
+  border-radius: 0px;
+}
+@media only screen and (max-width: 1000px) {
   div.panel-container div.indicator{
     position: relative;
     margin: 10px auto;
@@ -494,6 +536,7 @@ ul.list-inline li a {
 }
 .progress-bar{
   background-color: unset;
+  color: unset;
 }
 .bg-green {
   background-color: #2BD784;

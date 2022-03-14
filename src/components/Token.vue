@@ -12,7 +12,26 @@
           </button>
         </div>
         <div class="modal-body">
-          <textarea name="" id="" cols="100" rows="10" v-model="token" class="form-control"></textarea>
+          <nav>
+            <div class="nav nav-tabs" role="tablist">
+              <a class="nav-item nav-link active" id="token-fireant" data-toggle="tab" role="tab" aria-controls="nav-home" aria-selected="true" href="#nav-fireant">FireAnt Token</a>
+              <a class="nav-item nav-link" id="token-simplize" data-toggle="tab" role="tab" aria-controls="nav-home" aria-selected="true" href="#nav-simplize">Simplize Token</a>
+            </div>
+          </nav>
+             <div class="tab-content p-5">
+                <div class="tab-pane fade active show" id="nav-fireant" role="tabpanel" aria-labelledby="nav-home-tab">
+                  <div class="row mb-2">
+          <textarea name="" id="" cols="100" rows="10" v-model="data.token" class="form-control"></textarea>
+
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="nav-simplize" role="tabpanel" aria-labelledby="nav-home-tab">
+                  <div class="row mb-2">
+          <textarea name="" id="" cols="100" rows="10" v-model="data.tokenSimplize" class="form-control"></textarea>
+
+                  </div>
+                </div>
+              </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary waves-effect waves-themed" data-toggle="modal"
@@ -31,14 +50,17 @@
     },
     data() {
       return {
-        token: null
+        data: {
+          token: null,
+          tokenSimplize: null
+        }
       }
     },
     methods: {
       submit() {
-        if (this.token) {
-          this.$emit('setToken', this.token)
-          this.token = null
+        if (this.data.token && this.data.tokenSimplize) {
+          this.$emit('setToken', this.data)
+          this.data = {}
           $('button.btn-secondary').click()
         }
       }
