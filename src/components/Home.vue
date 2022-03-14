@@ -524,9 +524,9 @@ div.tab-content div.col-3, div.tab-content div.col-6 {
   margin-top: auto;
 }
 .progress{
-  height: 2rem;
-  font-size: 15px;
-  border-radius: 0px;
+  height: 2rem !important;
+  font-size: 15px !important;
+  border-radius: 0px !important;
 }
 @media only screen and (max-width: 1000px) {
   div.panel-container div.indicator{
@@ -539,10 +539,10 @@ div.tab-content div.col-3, div.tab-content div.col-6 {
   color: unset;
 }
 .bg-green {
-  background-color: #2BD784;
+  background-color: #2BD784 !important;
 }
 .bg-red {
-  background-color: #E14040;
+  background-color: #E14040 !important;
   color: #333;
 }
 </style>
