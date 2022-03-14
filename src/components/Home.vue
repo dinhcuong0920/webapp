@@ -15,7 +15,54 @@
       <div class="col-3"></div>
       <div class="col-3 text-right">
         <button type="button" class="btn btn-primary waves-effect waves-themed" data-toggle="modal"
-          data-target="#default-example-modal">Token</button>
+          data-target="#token-modal">Token</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>Dòng tiền theo nhóm ngành</h2>
+          </div>
+          <div class="panel-container show">
+            <div class="panel-content">
+              <nav>
+                <div class="nav nav-tabs" role="tablist">
+                  <a class="nav-item nav-link" id="nav-home-tab" data-toggle="tab" role="tab" aria-controls="nav-home" aria-selected="true" v-for="(item,index) in dataTimeSimplize" :key="index" :href="`#nav-${item.name}`" :class="index == 0? 'active' : ''">{{ item.name }}</a>
+                </div>
+              </nav>
+              <div class="tab-content p-5">
+                <div class="tab-pane fade" v-for="(item,index) in dataTimeSimplize" :key="index" :class="index == 0? 'active show' : ''" :id="`nav-${item.name}`" role="tabpanel" aria-labelledby="nav-home-tab">
+                  <div class="row" v-for="(it, idx) in convertDataFromSimplize(item.value, dataSimplize)" :key="idx">
+                    <div class="col-3">
+                      <label>{{ it.bcEconomicSectorName }}</label>
+                    </div>
+                    <div class="col-6">
+                      <div class="progress" v-if="item.name == '7D'">
+                        <div class="progress-bar" :class="it.pricePctChg7d > 0? 'bg-green' : 'bg-red'" role="progressbar" :style="`width: ${Math.abs(it.pricePctChg7d)}%`" :aria-valuenow="Math.abs(it.pricePctChg7d)" aria-valuemin="0" aria-valuemax="100">{{ it.pricePctChg7d }} %</div>
+                      </div>
+                      <div class="progress" v-if="item.name == '30D'">
+                        <div class="progress-bar" :class="it.pricePctChg30d > 0? 'bg-green' : 'bg-red'" role="progressbar" :style="`width: ${Math.abs(it.pricePctChg30d)}%`" :aria-valuenow="Math.abs(it.pricePctChg30d)" aria-valuemin="0" aria-valuemax="100">{{ it.pricePctChg30d }} %</div>
+                      </div>
+                      <div class="progress" v-if="item.name == '1Y'">
+                        <div class="progress-bar" :class="it.pricePctChg1y > 0? 'bg-green' : 'bg-red'" role="progressbar" :style="`width: ${Math.abs(it.pricePctChg1y)}%`" :aria-valuenow="Math.abs(it.pricePctChg1y)" aria-valuemin="0" aria-valuemax="100">{{ it.pricePctChg1y }} %</div>
+                      </div>
+                      <div class="progress" v-if="item.name == '3Y'">
+                        <div class="progress-bar" :class="it.pricePctChg3y > 0? 'bg-green' : 'bg-red'" role="progressbar" :style="`width: ${Math.abs(it.pricePctChg3y)}%`" :aria-valuenow="Math.abs(it.pricePctChg3y)" aria-valuemin="0" aria-valuemax="100">{{ it.pricePctChg3y }} %</div>
+                      </div>
+                      <div class="progress" v-if="item.name == '5Y'">
+                        <div class="progress-bar" :class="it.pricePctChg5y > 0? 'bg-green' : 'bg-red'" role="progressbar" :style="`width: ${Math.abs(it.pricePctChg5y)}%`" :aria-valuenow="Math.abs(it.pricePctChg5y)" aria-valuemin="0" aria-valuemax="100">{{ it.pricePctChg5y }} %</div>
+                      </div>
+                      <div class="progress" v-if="item.name == 'Ytd'">
+                        <div class="progress-bar" :class="it.pricePctChgYtd > 0? 'bg-green' : 'bg-red'" role="progressbar" :style="`width: ${Math.abs(it.pricePctChgYtd)}%`" :aria-valuenow="Math.abs(it.pricePctChgYtd)" aria-valuemin="0" aria-valuemax="100">{{ it.pricePctChgYtd }} %</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="row">
@@ -158,10 +205,38 @@
     data() {
       return {
         urlApi: 'https://restv2.fireant.vn',
+        urlApiSimplize: 'https://api.simplize.vn/api',
         curDay: moment().format('YYYY-MM-DD'),
         cusDay: null,
         rangeTime: [1, 3, 6, 9, 12, 24],
         timerSelected: 3,
+        dataTimeSimplize: [
+          {
+            name: '7D',
+            value: 'pricePctChg7d'
+          },
+          {
+            name: '30D',
+            value: 'pricePctChg30d'
+          },
+          {
+            name: '1Y',
+            value: 'pricePctChg1y'
+          },
+          {
+            name: '3Y',
+            value: 'pricePctChg3y'
+          },
+          {
+            name: '5Y',
+            value: 'pricePctChg5y'
+          },
+          {
+            name: 'Ytd',
+            value: 'pricePctChgYtd'
+          }
+        ],
+        dataSimplize: [],
         data: [{
             name: 'tài chính',
             code: 8000,
@@ -288,6 +363,7 @@
     },
     async mounted() {
       await this.getDataWithTime()
+      await this.getDataFromSimplize()
     },
     methods: {
       async getDataWithTime(type=null) {
@@ -331,9 +407,27 @@
           }
         })
       },
+      async getDataFromSimplize() {
+        const token = this.getCookie('token-simplize')
+        if (!token) {
+          return
+        }
+        const header = {
+          Authorization: token
+        }
+        const res = await axios.get(`${this.urlApiSimplize}/api/company/se/sector-performance`, {
+          headers: header
+        })
+        console.log(res)
+        this.dataSimplize = res.data.sectorPerformances
+        return res.data
+      },
       async setToken(token) {
         document.cookie = `token=${token}`
         await this.getDataWithTime()
+      },
+      convertDataFromSimplize(type, data) {
+        return _.orderBy(data, [type], ['desc'])
       },
       getCookie(name) {
         const escape = (s) => { return s.replace(/([.*+?$(){}|\]\\])/g, '\\$1'); }
@@ -381,15 +475,31 @@ div.panel-container div.indicator{
   right: 20px;
 }
 a.btn {
-  color: #FFF;
+  color: #FFF !important;
 }
 span.badge {
   margin-right: 5px;
+}
+ul.list-inline {
+  display: inline-flex;
+}
+ul.list-inline li a {
+  margin: 0px 10px;
 }
 @media only screen and (max-width: 600px) {
   div.panel-container div.indicator{
     position: relative;
     margin: 10px auto;
   }
+}
+.progress-bar{
+  background-color: unset;
+}
+.bg-green {
+  background-color: #2BD784;
+}
+.bg-red {
+  background-color: #E14040;
+  color: #333;
 }
 </style>

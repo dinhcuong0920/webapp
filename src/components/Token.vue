@@ -1,5 +1,5 @@
 <template>
-  <div class="modal fade show" id="default-example-modal" tabindex="-1" role="dialog"
+  <div class="modal fade show" id="token-modal" tabindex="-1" role="dialog"
     style="display: none; padding-right: 17px;" aria-modal="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -7,7 +7,7 @@
           <h4 class="modal-title">
             Token
           </h4>
-          <button type="button" class="close" data-toggle="modal" data-target="#default-example-modal">
+          <button type="button" class="close" data-toggle="modal" data-target="#token-modal">
             <span aria-hidden="true"><i class="fal fa-times"></i></span>
           </button>
         </div>
@@ -16,7 +16,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary waves-effect waves-themed" data-toggle="modal"
-            data-target="#default-example-modal">Close</button>
+            data-target="#token-modal">Close</button>
           <button type="button" class="btn btn-primary waves-effect waves-themed" @click="submit()">Save</button>
         </div>
       </div>
@@ -39,8 +39,7 @@
         if (this.token) {
           this.$emit('setToken', this.token)
           this.token = null
-          $('#default-example-modal').hide()
-          $('div.modal-backdrop').removeClass('show').addClass('hide')
+          $('button.btn-secondary').click()
         }
       }
     },
