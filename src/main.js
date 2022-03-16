@@ -3,6 +3,7 @@ import Home from '@/components/Home.vue'
 import VueRouter from 'vue-router';
 import routes from './router';
 require('./app.bundle.css')
+require('./app.css')
 
 Vue.config.productionTip = false
 

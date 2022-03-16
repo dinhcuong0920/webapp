@@ -332,6 +332,44 @@
             ]
           },
           {
+            name: 'dầu khí',
+            code: '0001',
+            indexHigh: [],
+            totalValue: [],
+            date: [],
+            from: null,
+            to: null,
+            child: [
+              {
+                name: 'sản xuất dầu khí',
+                code: '0530',
+                indexHigh: [],
+                totalValue: [],
+                date: [],
+                from: null,
+                to: null,
+              },
+              {
+                name: 'dịch vụ dầu khí',
+                code: '0570',
+                indexHigh: [],
+                totalValue: [],
+                date: [],
+                from: null,
+                to: null,
+              },
+              {
+                name: 'năng lượng thay thế',
+                code: '0580',
+                indexHigh: [],
+                totalValue: [],
+                date: [],
+                from: null,
+                to: null,
+              }
+            ]
+          },
+          {
             name: 'vật liệu cơ bản',
             code: 1000,
             indexHigh: [],
@@ -368,7 +406,6 @@
               }
             ]
           }
-
         ]
       }
     },
@@ -441,10 +478,9 @@
       },
       async getDataFromFialda() {
         const header = {
-          origin: 'https://fwt.fialda.com',
-          referer: 'https://fwt.fialda.com/'
+          crossDomain: true
         }
-        const res = await axios.get(`https://fwtapi2.fialda.com/api/services/app/Market/GetICBInfos`, { crossDomain: true })
+        const res = await axios.get(`https://fwtapi2.fialda.com/api/services/app/Market/GetICBInfos`, { headers: header })
         this.dataFialda = res.data.result
       },
       async setToken(data) {
@@ -492,57 +528,3 @@
   };
 
 </script>
-
-<style>
-h2 , a.card-title{
-  text-transform: uppercase;
-}
-div.panel h2 {
-  justify-content: center;
-}
-div.panel-container div.indicator{
-  position: absolute;
-  right: 20px;
-}
-div.panel-container div.form-group{
-  padding: 0px 20px;
-}
-a.btn {
-  color: #FFF !important;
-}
-span.badge {
-  margin-right: 5px;
-}
-ul.list-inline {
-  display: inline-flex;
-}
-ul.list-inline li a {
-  margin: 0px 10px;
-}
-div.tab-content div.col-3, div.tab-content div.col-6 {
-  margin-bottom: auto;
-  margin-top: auto;
-}
-.progress{
-  height: 2rem !important;
-  font-size: 15px !important;
-  border-radius: 0px !important;
-}
-@media only screen and (max-width: 1000px) {
-  div.panel-container div.indicator{
-    position: relative;
-    margin: 10px auto;
-  }
-}
-.progress-bar{
-  background-color: unset;
-  color: unset;
-}
-.bg-green {
-  background-color: #2BD784 !important;
-}
-.bg-red {
-  background-color: #E14040 !important;
-  color: #333;
-}
-</style>
